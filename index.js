@@ -14,22 +14,22 @@ app.use(cors());
 app.use(express.json())
 
 // jwt
-const jwtSecret = "2e12ebb9076a543ee9539a5216e876008753904163daa83bf2503cdd39c1564b+KArH+PXH/+9zjirFIoXgUGM"
+const jwtSecret = process.env.JWT_SECRET;
 
 const verify = (req, res, next) => {
     const auth = req.headers.authorization
     console.log(auth)
-    if(!auth || !auth.startsWith('Bearer ')) {
+    if (!auth || !auth.startsWith('Bearer ')) {
         return res.status(401).json('invalid token')
     }
-    else{
-        try{
+    else {
+        try {
             const token = auth.split(' ')[1]
             const decode = jwt.verify(token, jwtSecret)
             next()
         }
-        catch(error){
-            res.status(403).json({message:'invalid expired token', error,auth})
+        catch (error) {
+            res.status(403).json({ message: 'invalid expired token', error, auth })
         }
     }
 }
@@ -63,6 +63,13 @@ async function run() {
         const db = client.db('service-Hub')
 
         const serviceCollection = db.collection("services")
+
+        // getting allservice data from mongodb
+        app.get('/allservices', async (req, res) => {
+            const allServices = await db.collection('allservice').find().toArray();
+            res.status(200).json(allServices);
+        });
+
 
         // service-Hub
         app.get('/', (req, res) => {
