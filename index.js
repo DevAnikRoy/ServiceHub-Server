@@ -70,6 +70,19 @@ async function run() {
             res.status(200).json(allServices);
         });
 
+        app.get('/featuredservices', async (req, res) => {
+            try {
+                const services = await db
+                    .collection('allservice')
+                    .find()
+                    .limit(6)
+                    .toArray();
+                res.status(200).json(services);
+            } catch (err) {
+                res.status(500).json({ message: 'Something went wrong', error: err });
+            }
+        });
+
 
         // service-Hub
         app.get('/', (req, res) => {
