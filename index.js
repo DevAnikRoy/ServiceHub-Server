@@ -66,13 +66,35 @@ async function run() {
 
         // Auth
         app.post("/register", async (req, res) => {
-            const user = req.body;
-            const existing = await users.findOne({ email: user.email });
-            if (existing) return res.status(400).json("User already exists");
-            await users.insertOne(user);
-            const token = generateToken(user);
-            res.status(201).json({ token, user });
+            console.log(" Google register body:", req.body);
+            const { name, email, imageUrl } = req.body;
+
+            if (!email || !name) {
+                return res.status(400).json("Required fields missing");
+            }
+
+            const existing = await users.findOne({ email });
+            if (existing) {
+                const token = generateToken(existing);
+                return res.status(200).json({ token, user: existing });
+            }
+
+            const newUser = {
+                name,
+                email,
+                imageUrl: imageUrl || null,
+                createdAt: new Date()
+            };
+
+            const result = await users.insertOne(newUser);
+            console.log(" Google user inserted:", result);
+
+            const token = generateToken(newUser);
+            res.status(201).json({ token, user: newUser });
         });
+
+
+
 
         app.post("/login", async (req, res) => {
             const { email } = req.body;
@@ -112,7 +134,11 @@ async function run() {
             const service = await services.findOne({ _id: new ObjectId(id) });
             res.json(service);
         });
+        
+        // ************************************************************************
 
+
+       
 
         // Start server
         app.listen(port, () => {
