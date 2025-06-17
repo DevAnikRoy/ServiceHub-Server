@@ -98,9 +98,15 @@ async function run() {
 
         app.post("/login", async (req, res) => {
             const { email } = req.body;
-            const token = generateToken({ email });
-            res.json({ token, user: { email } });
+            if (!email) return res.status(400).json("Email is required");
+
+            const user = await users.findOne({ email });
+            if (!user) return res.status(404).json("User not found");
+
+            const token = generateToken(user);
+            res.json({ token, user });
         });
+
 
         // Add Service
         app.post("/addservice", verify, async (req, res) => {
@@ -134,11 +140,10 @@ async function run() {
             const service = await services.findOne({ _id: new ObjectId(id) });
             res.json(service);
         });
-        
+
         // ************************************************************************
 
 
-       
 
         // Start server
         app.listen(port, () => {
