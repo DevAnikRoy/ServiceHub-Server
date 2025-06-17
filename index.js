@@ -138,8 +138,8 @@ async function run() {
             const service = await services.findOne({ _id: new ObjectId(id) });
             res.json(service);
         });
-        
-         // Get Current User Profile
+
+        // Get Current User Profile
         app.get("/me", verify, async (req, res) => {
             try {
                 const user = await users.findOne({ email: req.user.email });
@@ -149,6 +149,23 @@ async function run() {
             } catch (error) {
                 res.status(500).json("Server error");
             }
+        });
+
+        // My Services
+        app.get("/myservices", verify, async (req, res) => {
+            const servicesList = await services.find({ providerEmail: req.user.email }).toArray();
+            res.json(servicesList);
+        });
+        
+        // Delete Service
+        app.delete("/services/:id", verify, async (req, res) => {
+            const id = req.params.id;
+            const service = await services.findOne({ _id: new ObjectId(id) });
+            if (service.providerEmail !== req.user.email)
+                return res.status(403).json("Cannot delete others' services");
+
+            await services.deleteOne({ _id: new ObjectId(id) });
+            res.json("Service deleted");
         });
 
         // ************************************************************************
