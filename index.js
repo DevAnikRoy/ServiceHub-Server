@@ -66,7 +66,7 @@ async function run() {
 
         // Auth
         app.post("/register", async (req, res) => {
-            console.log(" Google register body:", req.body);
+            // console.log(" Google register body:", req.body);
             const { name, email, imageUrl } = req.body;
 
             if (!email || !name) {
@@ -92,8 +92,6 @@ async function run() {
             const token = generateToken(newUser);
             res.status(201).json({ token, user: newUser });
         });
-
-
 
 
         app.post("/login", async (req, res) => {
@@ -139,6 +137,18 @@ async function run() {
             const id = req.params.id;
             const service = await services.findOne({ _id: new ObjectId(id) });
             res.json(service);
+        });
+        
+         // Get Current User Profile
+        app.get("/me", verify, async (req, res) => {
+            try {
+                const user = await users.findOne({ email: req.user.email });
+                if (!user) return res.status(404).json("User not found");
+
+                res.json(user);
+            } catch (error) {
+                res.status(500).json("Server error");
+            }
         });
 
         // ************************************************************************
