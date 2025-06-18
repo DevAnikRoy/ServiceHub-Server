@@ -204,9 +204,19 @@ async function run() {
             res.json(bookingsList);
         });
 
-        // ************************************************************************
+        // Service To-Do (Provider's perspective)
+        app.get("/servicetodo", verify, async (req, res) => {
+            const result = await bookings.find({ providerEmail: req.user.email }).toArray();
+            res.json(result);
+        });
 
-
+        // Update Status
+        app.put("/updatestatus/:id", verify, async (req, res) => {
+            const id = req.params.id;
+            const { status } = req.body;
+            await bookings.updateOne({ _id: new ObjectId(id) }, { $set: { serviceStatus: status } });
+            res.json("Status updated");
+        });
 
         // Start server
         app.listen(port, () => {
