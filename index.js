@@ -7,7 +7,11 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin: "*",
+  credentials: true
+}))
 app.use(express.json());
 
 const jwtSecret = process.env.JWT_SECRET;
@@ -47,11 +51,11 @@ async function run() {
 
 
     try {
-        await client.connect();
+        // await client.connect();
         const db = client.db("service-Hub");
 
         await db.command({ ping: 1 });
-        console.log("Connected to MongoDB");
+        // console.log("Connected to MongoDB");
 
         await db.createCollection("bookings");
         await db.createCollection("users");
@@ -87,10 +91,10 @@ async function run() {
             };
 
             const result = await users.insertOne(newUser);
-            console.log(" Google user inserted:", result);
+            // console.log(" Google user inserted:", result);
 
             const token = generateToken(newUser);
-            res.status(201).json({ token, user: newUser });
+            res.status(201).json({ token, user: result });
         });
 
 
@@ -201,13 +205,14 @@ async function run() {
         // My Booked Services (User)
         app.get("/mybookings", verify, async (req, res) => {
             const bookingsList = await bookings.find({ userEmail: req.user.email }).toArray();
-            res.json(bookingsList);
+            res.json(Array.isArray(bookingsList) ? bookingsList : []);
+
         });
 
         // Service To-Do (Provider's perspective)
         app.get("/servicetodo", verify, async (req, res) => {
             const result = await bookings.find({ providerEmail: req.user.email }).toArray();
-            res.json(result);
+            res.json(Array.isArray(result) ? result : []);
         });
 
         // Update Status
@@ -220,7 +225,7 @@ async function run() {
 
         // Start server
         app.listen(port, () => {
-            console.log(`ServiceHub backend running on port ${port}`);
+            // console.log(`ServiceHub backend running on port ${port}`);
         });
     } finally {
         // optional: await client.close();
