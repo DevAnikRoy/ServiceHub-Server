@@ -185,6 +185,25 @@ async function run() {
             res.json("Service deleted");
         });
 
+        // Book Service
+        app.post("/bookservice", verify, async (req, res) => {
+            const payload = req.body;
+            const user = await users.findOne({ email: req.user.email });
+            payload.userEmail = user.email;
+            payload.userName = user.name;
+            payload.userImage = user.imageUrl;
+            payload.status = "pending";
+            payload.createdAt = new Date();
+            await bookings.insertOne(payload);
+            res.json("Service booked");
+        });
+
+        // My Booked Services (User)
+        app.get("/mybookings", verify, async (req, res) => {
+            const bookingsList = await bookings.find({ userEmail: req.user.email }).toArray();
+            res.json(bookingsList);
+        });
+
         // ************************************************************************
 
 
