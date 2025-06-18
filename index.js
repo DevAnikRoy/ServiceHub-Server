@@ -156,7 +156,24 @@ async function run() {
             const servicesList = await services.find({ providerEmail: req.user.email }).toArray();
             res.json(servicesList);
         });
-        
+
+        // Update Service
+        app.patch("/services/:id", verify, async (req, res) => {
+            const id = req.params.id;
+            const update = req.body;
+
+            const result = await services.updateOne(
+                { _id: new ObjectId(id), providerEmail: req.user.email },
+                { $set: update }
+            );
+
+            if (result.modifiedCount > 0) {
+                res.json({ message: "Service updated" });
+            } else {
+                res.status(400).json("No changes applied");
+            }
+        });
+
         // Delete Service
         app.delete("/services/:id", verify, async (req, res) => {
             const id = req.params.id;
